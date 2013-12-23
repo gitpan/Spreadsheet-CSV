@@ -13,13 +13,13 @@ use Compress::Zlib();
 use Carp();
 use IO::File();
 
-sub MAGIC_NUMBER_BUFFER_SIZE { return 2 }      # for .zip and .gz files
-sub GRANDPARENT_INDEX        { return -2 }
-sub PARENT_INDEX             { return -1 }
-sub EXCEL_COLUMN_RADIX       { return 26 }
-sub BUFFER_SIZE              { return 4096 }
+sub _MAGIC_NUMBER_BUFFER_SIZE { return 2 }      # for .zip and .gz files
+sub _GRANDPARENT_INDEX        { return -2 }
+sub _PARENT_INDEX             { return -1 }
+sub _EXCEL_COLUMN_RADIX       { return 26 }
+sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -82,7 +82,7 @@ sub _stuff_input_into_tmp_file {
     my $handle = IO::File->new_tmpfile()
       or Carp::croak("Failed to create temporary file:$EXTENDED_OS_ERROR");
     my $result;
-    while ( $result = read $input_handle, my $buffer, BUFFER_SIZE() ) {
+    while ( $result = read $input_handle, my $buffer, _BUFFER_SIZE() ) {
         print {$handle} $buffer
           or
           Carp::croak("Failed to write to temporary file:$EXTENDED_OS_ERROR");
@@ -214,7 +214,7 @@ sub _sniff_magic_bytes {
     seek $handle, 0, Fcntl::SEEK_SET()
       or
       Carp::croak("Failed to seek to start of filehandle:$EXTENDED_OS_ERROR");
-    defined read $handle, my $magic_bytes, MAGIC_NUMBER_BUFFER_SIZE()
+    defined read $handle, my $magic_bytes, _MAGIC_NUMBER_BUFFER_SIZE()
       or Carp::croak("Failed to read from filehandle:$EXTENDED_OS_ERROR");
     seek $handle, 0, Fcntl::SEEK_SET()
       or
@@ -407,7 +407,7 @@ sub _ods_cells {
                 push @{$element_stack}, $element_name;
                 if ( $element_name eq 'table:table-row' ) {
                     $current_row           = [];
-                    $current_column_number = undef;
+                    $current_column_number = 0 - 1;
                 }
                 elsif ( $element_name eq 'table:table' ) {
                     if ( defined $worksheet_count ) {
@@ -422,12 +422,7 @@ sub _ods_cells {
                         $worksheet_count );
                 }
                 elsif ( $element_name eq 'table:table-cell' ) {
-                    if ( defined $current_column_number ) {
-                        $current_column_number += 1;
-                    }
-                    else {
-                        $current_column_number = 0;
-                    }
+                    $current_column_number += 1;
                 }
             },
             End => sub {
@@ -448,8 +443,8 @@ sub _ods_cells {
             Char => sub {
                 my ( $expat, $content ) = @_;
                 if ($process_worksheet) {
-                    if ( $element_stack->[PARENT_INDEX] eq 'text:p' ) {
-                        if ( $element_stack->[ GRANDPARENT_INDEX() ] eq
+                    if ( $element_stack->[_PARENT_INDEX] eq 'text:p' ) {
+                        if ( $element_stack->[ _GRANDPARENT_INDEX() ] eq
                             'table:table-cell' )
                         {
                             if (
@@ -540,14 +535,14 @@ sub _gnumeric_cells {
             },
             Char => sub {
                 my ( $expat, $content ) = @_;
-                if ( $element_stack->[ PARENT_INDEX() ] eq 'gnm:Name' ) {
-                    if (
-                        $element_stack->[ GRANDPARENT_INDEX() ] eq 'gnm:Sheet' )
+                if ( $element_stack->[ _PARENT_INDEX() ] eq 'gnm:Name' ) {
+                    if ( $element_stack->[ _GRANDPARENT_INDEX() ] eq
+                        'gnm:Sheet' )
                     {
                         $current_worksheet_name = $content;
                     }
                 }
-                if ( $element_stack->[ PARENT_INDEX() ] eq 'gnm:Cell' ) {
+                if ( $element_stack->[ _PARENT_INDEX() ] eq 'gnm:Cell' ) {
                     $current_sheet_cells->[$current_row_number]
                       ->[$current_column_number] = $content;
                 }
@@ -732,11 +727,11 @@ sub _xlsx_cells {
             },
             Char => sub {
                 my ( $expat, $content ) = @_;
-                if (   ( $element_stack->[ GRANDPARENT_INDEX() ] eq 'c' )
-                    && ( $element_stack->[ PARENT_INDEX() ] eq 'v' ) )
+                if (   ( $element_stack->[ _GRANDPARENT_INDEX() ] eq 'c' )
+                    && ( $element_stack->[ _PARENT_INDEX() ] eq 'v' ) )
                 {
                     my $cell_reference =
-                      $parameter_stack->[ GRANDPARENT_INDEX() ]->{r};
+                      $parameter_stack->[ _GRANDPARENT_INDEX() ]->{r};
                     if ( $cell_reference =~ /^([[:upper:]]+)(\d+)$/smx ) {
                         my ( $column_designator, $row_number ) = ( $1, $2 - 1 );
                         my $column_number = 0;
@@ -746,15 +741,15 @@ sub _xlsx_cells {
                         {
                             $column_number +=
                               ( ( ord uc $letter ) - ( ord 'A' ) ) *
-                              ( EXCEL_COLUMN_RADIX()**$letter_index );
+                              ( _EXCEL_COLUMN_RADIX()**$letter_index );
                             $letter_index += 1;
                         }
                         if (
                             (
-                                defined $parameter_stack->[ GRANDPARENT_INDEX()
-                                ]->{t}
+                                defined
+                                $parameter_stack->[ _GRANDPARENT_INDEX() ]->{t}
                             )
-                            && ( $parameter_stack->[ GRANDPARENT_INDEX() ]->{t}
+                            && ( $parameter_stack->[ _GRANDPARENT_INDEX() ]->{t}
                                 eq 's' )
                           )
                         {
@@ -789,7 +784,7 @@ Spreadsheet::CSV - Replace CSV inputs with spreadsheets
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =head1 SYNOPSIS
 
@@ -868,6 +863,10 @@ it will return false (''). This is useful to see the difference between a
 failure and end of file
 
 =head2 error_diag
+
+ $error_str = $csv->error_diag ();
+
+If (and only if) an error occurred, this function returns the diagnostics of that error.
 
 =head1 DIAGNOSTICS
 

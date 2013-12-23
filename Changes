@@ -1,5 +1,11 @@
 Revision history for Spreadsheet-CSV
 
+0.03   Tue Dec 24 07:50:00 2013
+        Added better pod for error_diag method
+
+0.02   Tue Dec 24 07:34:00 2013
+        Fixed problems with pod coverage test
+
 0.01   Mon Dec 23 22:15:00 2013
         Initial release.
 
