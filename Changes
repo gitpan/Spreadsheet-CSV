@@ -1,5 +1,9 @@
 Revision history for Spreadsheet-CSV
 
+0.05   Wed Dec 25 09:17:00 2013
+        Added t/05-sheets-utf8.t for UTF-8 testing and worksheet selection
+        Added default binary option to Text::CSV_XS calls
+
 0.04   Wed Dec 25 07:15:00 2013
         Added binmode calls to tests
 	Code fixes to allow running on older perls

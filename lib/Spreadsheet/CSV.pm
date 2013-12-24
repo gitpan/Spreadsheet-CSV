@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -40,6 +40,9 @@ sub new {
     }
     delete $params->{worksheet_number};
     delete $params->{worksheet_name};
+    if ( !exists $params->{binary} ) {
+        $params->{binary} = 1;
+    }
     $self->{csv} = Text::CSV_XS->new($params);
     bless $self, $class;
     return $self;
@@ -784,7 +787,7 @@ Spreadsheet::CSV - Replace CSV inputs with spreadsheets
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =head1 SYNOPSIS
 
@@ -814,6 +817,8 @@ Spreadsheet::CSV attempts to provide a drop-in replacement for Text::CSV_XS when
 
  my $csv = Text::CSV_XS->new ({ attributes ... });
 
+The Text::CSV_XS 'binary' parameter is switched on by default.
+
 The following additional attributes are available:
 
 =over 4
@@ -828,7 +833,7 @@ X<worksheet_number>
 
 The worksheet to read from for file handles containing spreadsheets (starting from
 1).  This option will only apply if the worksheet name has not been specified.  By
-default worksheet_number will be '1'
+default worksheet_number will be '1' 
 
 =back
 
@@ -911,7 +916,7 @@ The only spreadsheets supported at the moment are
 =head1 BUGS AND LIMITATIONS
 
 At the moment this library will read everything into RAM.  It relies on the system enforcing the reasonable limits
-for file size, to allow these files to be read into RAM.  This may change in the future to, for example, a behind-the-scenes implementation that turns all file types into Text::CSV_XS handles.
+for file size, to allow these files to be read into RAM.  This may change in the future.
 
 Please report any bugs or feature requests to C<bug-spreadsheet-csv at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Spreadsheet-CSV>.  I will be notified, and then you'll

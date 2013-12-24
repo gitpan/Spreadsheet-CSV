@@ -11,6 +11,7 @@ t/04-usage.t
 t/03-corruption.t
 t/01-import.t
 t/02-bombs.t
+t/05-sheets-utf8.t
 t/data/sample.gnumeric
 t/data/sample.ods
 t/data/bombs/workbook.xlsx
@@ -34,5 +35,6 @@ t/data/sample2.gnumeric
 t/data/sample2.sxc
 t/data/sample2.xls
 t/data/sample.csv
+t/data/sample2.csv
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)
