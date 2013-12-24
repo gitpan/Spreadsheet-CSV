@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -650,7 +650,7 @@ sub _xlsx_worksheet_path {
             Start => sub {
                 my ( $expat, $element_name, %element_parameters ) = @_;
                 if ( $element_name eq 'sheet' ) {
-                    push $sheets, \%element_parameters;
+                    push @{$sheets}, \%element_parameters;
                     if ( !defined $worksheet_number ) {
                         if ( defined $worksheet_count ) {
                             $worksheet_count += 1;
@@ -784,7 +784,7 @@ Spreadsheet::CSV - Replace CSV inputs with spreadsheets
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =head1 SYNOPSIS
 

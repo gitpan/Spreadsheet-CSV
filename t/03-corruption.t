@@ -10,6 +10,7 @@ plan tests => 18;
 
 foreach my $file_name (qw(missing_worksheet.xlsx missing_content.ods missing_mimetype.ods unknown_mimetype.ods bad_archive.xlsx bad_gzip.gnumeric)) {
 	my $handle = IO::File->new('t/data/corrupt/' . $file_name) or die "Screaming:$!";
+	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();
 	my $result = $spreadsheet->getline($handle);
 	ok(not(defined $result), "getline returned not defined on corrupt content");

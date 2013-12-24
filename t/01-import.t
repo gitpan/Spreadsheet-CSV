@@ -10,6 +10,7 @@ plan tests => 186;
 
 foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv)) {
 	my $handle = IO::File->new('t/data/sample.' . $suffix) or die "Screaming:$!";
+	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();
 	my $number_of_lines = 0;
 	my $row = $spreadsheet->getline($handle);

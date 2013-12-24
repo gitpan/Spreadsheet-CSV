@@ -10,6 +10,7 @@ plan tests => 18;
 
 foreach my $file_name (qw(shared_strings.xlsx workbook.xlsx worksheet.xlsx content.ods content.sxc sample.gnumeric)) {
 	my $handle = IO::File->new('t/data/bombs/' . $file_name) or die "Screaming:$!";
+	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();
 	my $result = $spreadsheet->getline($handle);
 	ok(not(defined $result), "getline returned not defined on an XML bomb");
