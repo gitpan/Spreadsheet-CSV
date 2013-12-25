@@ -6,9 +6,9 @@ use Test::More;
 use Spreadsheet::CSV();
 use IO::File();
 
-plan tests => 18;
+plan tests => 21;
 
-foreach my $file_name (qw(shared_strings.xlsx workbook.xlsx worksheet.xlsx content.ods content.sxc sample.gnumeric)) {
+foreach my $file_name (qw(shared_strings.xlsx workbook.xlsx worksheet.xlsx content.ods content.sxc sample.gnumeric maindoc.ksp)) {
 	my $handle = IO::File->new('t/data/bombs/' . $file_name) or die "Screaming:$!";
 	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();

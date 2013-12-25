@@ -6,9 +6,9 @@ use Test::More;
 use Spreadsheet::CSV();
 use IO::File();
 
-plan tests => 186;
+plan tests => 217;
 
-foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv)) {
+foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 	my $handle = IO::File->new('t/data/sample.' . $suffix) or die "Screaming:$!";
 	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();

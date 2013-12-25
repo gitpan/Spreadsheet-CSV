@@ -7,13 +7,13 @@ use Spreadsheet::CSV();
 use IO::File();
 use Encode();
 
-plan tests => 36;
+plan tests => 43;
 
 MAIN: {
 	my $encoded_string = "UTF-8 stuff is 'Ў'";
 	my $decoded_string = $encoded_string;
 	$decoded_string = Encode::decode('UTF-8', $decoded_string, 1);
-	foreach my $file_name (qw(sample2.gnumeric sample2.ods sample2.sxc sample2.xls sample2.xlsx)) {
+	foreach my $file_name (qw(sample2.gnumeric sample2.ods sample2.sxc sample2.xls sample2.xlsx sample2.ksp)) {
 		my $handle = IO::File->new('t/data/' . $file_name) or die "Screaming:$!";
 		binmode $handle;
 		my $spreadsheet = Spreadsheet::CSV->new();

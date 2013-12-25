@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -225,81 +225,123 @@ sub _sniff_magic_bytes {
     return $magic_bytes;
 }
 
-sub _parse_archive_zip_spreadsheet {
+sub _handle_workbook_type_zips {
     my ( $self, $zip ) = @_;
-    if ( $zip->memberNamed('xl/workbook.xml') ) {
-        my $shared_strings = $self->_xlsx_shared_strings($zip);
-        if ( !defined $shared_strings ) {
-            return;
-        }
-        my $worksheet_path = $self->_xlsx_worksheet_path($zip);
-        if (   ( defined $worksheet_path )
-            && ( my $worksheet = $zip->memberNamed($worksheet_path) ) )
-        {
-            $self->{'content_type'} =
-'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-            $self->{type}      = 'xlsx';
-            $self->{zip}       = $zip;
-            $self->{row_index} = 0;
-            my $content = $worksheet->contents();
-            my $cells = $self->_xlsx_cells( $content, $shared_strings );
-            if ( defined $cells ) {
-                $self->{cells} = $cells;
-            }
-            else {
-                return;
-            }
-        }
-        elsif ( defined $worksheet_path ) {
-            $self->{_ERROR_DIAG} =
-              q[ZIP - Missing '] . $worksheet_path . q[' file in .xlsx file];
-            return;
+    my $shared_strings = $self->_xlsx_shared_strings($zip);
+    if ( !defined $shared_strings ) {
+        return;
+    }
+    my $worksheet_path = $self->_xlsx_worksheet_path($zip);
+    if (   ( defined $worksheet_path )
+        && ( my $worksheet = $zip->memberNamed($worksheet_path) ) )
+    {
+        $self->{'content_type'} =
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $self->{type}      = 'xlsx';
+        $self->{zip}       = $zip;
+        $self->{row_index} = 0;
+        my $content = $worksheet->contents();
+        my $cells = $self->_xlsx_cells( $content, $shared_strings );
+        if ( defined $cells ) {
+            $self->{cells} = $cells;
+            return 1;
         }
         else {
             return;
         }
     }
-    elsif ( $zip->memberNamed('mimetype') ) {
-        my $member = $zip->memberNamed('mimetype');
-        my $content_type;
-        delete $self->{type};
-        if ( defined $member ) {
-            $content_type = $member->contents();
-            if ( $content_type eq
-                'application/vnd.oasis.opendocument.spreadsheet' )
-            {
-                $self->{type} = 'ods';
-            }
-            elsif ( $content_type eq 'application/vnd.sun.xml.calc' ) {
-                $self->{type} = 'sxc';
-            }
+    elsif ( defined $worksheet_path ) {
+        $self->{_ERROR_DIAG} =
+          q[ZIP - Missing '] . $worksheet_path . q[' file in .xlsx file];
+        return;
+    }
+    else {
+        return;
+    }
+}
+
+sub _handle_mimetype_type_zips {
+    my ( $self, $zip ) = @_;
+    my $member = $zip->memberNamed('mimetype');
+    my $content_type;
+    delete $self->{type};
+    if ( defined $member ) {
+        $content_type = $member->contents();
+        if ( $content_type eq 'application/vnd.oasis.opendocument.spreadsheet' )
+        {
+            $self->{type} = 'ods';
         }
-        if ( $self->{type} ) {
-            $self->{content_type} = $content_type;
-            my $content_member = $zip->memberNamed('content.xml');
-            if ( defined $content_member ) {
-                $self->{zip}       = $zip;
-                $self->{row_index} = 0;
-                my $content_data = $content_member->contents();
-                my $cells        = $self->_ods_cells($content_data);
-                if ( defined $cells ) {
-                    $self->{cells} = $cells;
-                }
-                else {
-                    return;
-                }
+        elsif ( $content_type eq 'application/vnd.sun.xml.calc' ) {
+            $self->{type} = 'sxc';
+        }
+        elsif ( $content_type eq 'application/x-kspread' ) {
+            $self->{type} = 'ksp';
+        }
+    }
+    if ( ( $self->{type} ) && ( $self->{type} eq 'ksp' ) ) {
+        $self->{content_type} = $content_type;
+        my $maindoc_member = $zip->memberNamed('maindoc.xml');
+        if ( defined $maindoc_member ) {
+            $self->{zip}       = $zip;
+            $self->{row_index} = 0;
+            my $maindoc_data = $maindoc_member->contents();
+            my $cells        = $self->_ksp_cells($maindoc_data);
+            if ( defined $cells ) {
+                $self->{cells} = $cells;
+                return 1;
             }
             else {
-                $self->{_ERROR_DIAG} =
-                    q[ZIP - Missing 'content.xml' file in .]
-                  . ( lc $self->{type} )
-                  . q[ file];
                 return;
             }
         }
         else {
             $self->{_ERROR_DIAG} =
+                q[ZIP - Missing 'content.xml' file in .]
+              . ( lc $self->{type} )
+              . q[ file];
+            return;
+        }
+    }
+    elsif ( $self->{type} ) {
+        $self->{content_type} = $content_type;
+        my $content_member = $zip->memberNamed('content.xml');
+        if ( defined $content_member ) {
+            $self->{zip}       = $zip;
+            $self->{row_index} = 0;
+            my $content_data = $content_member->contents();
+            my $cells        = $self->_ods_cells($content_data);
+            if ( defined $cells ) {
+                $self->{cells} = $cells;
+                return 1;
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            $self->{_ERROR_DIAG} =
+                q[ZIP - Missing 'content.xml' file in .]
+              . ( lc $self->{type} )
+              . q[ file];
+            return;
+        }
+    }
+    else {
+        $self->{_ERROR_DIAG} =
 q[ZIP - mimetype file does not contain any known MIME Types in OpenOffice document];
+        return;
+    }
+}
+
+sub _parse_archive_zip_spreadsheet {
+    my ( $self, $zip ) = @_;
+    if ( $zip->memberNamed('xl/workbook.xml') ) {
+        if ( !defined $self->_handle_workbook_type_zips($zip) ) {
+            return;
+        }
+    }
+    elsif ( $zip->memberNamed('mimetype') ) {
+        if ( !defined $self->_handle_mimetype_type_zips($zip) ) {
             return;
         }
     }
@@ -388,6 +430,70 @@ sub _process_worksheet {
         $process_worksheet = 1;
     }
     return $process_worksheet;
+}
+
+sub _ksp_cells {
+    my ( $self, $maindoc_content ) = @_;
+    my $cells = [];
+    my $current_worksheet_name;
+    my $parameter_stack;
+    my $element_stack;
+    my $worksheet_count;
+    my $process_worksheet = 0;
+    my $xml               = XML::Parser->new(
+        Handlers => {
+            Entity => sub {
+                Carp::croak(
+'XML Entities have been detected and rejected in the XML, due to security concerns'
+                );
+            },
+            Start => sub {
+                my ( $expat, $element_name, %element_parameters ) = @_;
+                push @{$element_stack},   $element_name;
+                push @{$parameter_stack}, \%element_parameters;
+                if ( $element_name eq 'table' ) {
+                    if ( defined $worksheet_count ) {
+                        $worksheet_count += 1;
+                    }
+                    else {
+                        $worksheet_count = 0;
+                    }
+                    $process_worksheet =
+                      $self->_process_worksheet( $element_parameters{name},
+                        $worksheet_count );
+                }
+            },
+            End => sub {
+                my ( $expat, $element_name ) = @_;
+                pop @{$parameter_stack};
+                if ( $element_name ne pop @{$element_stack} ) {
+                    Carp::croak(
+                        'Internal confusion in processing XML elements');
+                }
+            },
+            Char => sub {
+                my ( $expat, $content ) = @_;
+                if ($process_worksheet) {
+                    if ( ( defined $element_stack->[ _GRANDPARENT_INDEX() ] )
+                        && (
+                            $element_stack->[ _GRANDPARENT_INDEX() ] eq 'cell' )
+                        && ( $element_stack->[ _PARENT_INDEX() ] eq 'text' ) )
+                    {
+                        $cells->[ $parameter_stack->[ _GRANDPARENT_INDEX() ]
+                          ->{row} - 1 ]
+                          ->[ $parameter_stack->[ _GRANDPARENT_INDEX() ]
+                          ->{column} - 1 ] = $content;
+                    }
+                }
+              }
+        }
+    );
+    eval { $xml->parse($maindoc_content); } or do {
+        chomp $EVAL_ERROR;
+        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        return;
+    };
+    return $cells;
 }
 
 sub _ods_cells {
@@ -783,11 +889,11 @@ __END__
 
 =head1 NAME
 
-Spreadsheet::CSV - Replace CSV inputs with spreadsheets
+Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =head1 SYNOPSIS
 
@@ -854,6 +960,7 @@ Accepted file types are currently
  * Microsoft Excel 2003 - .xlsx
  * OpenOffice - .ods and .sxc
  * Gnumeric - .gnumeric
+ * Kspread - .ksp
  * CSV - .csv
 
 Patches for support for other file types would be gratefully accepted.
@@ -911,6 +1018,7 @@ The only spreadsheets supported at the moment are
  Microsoft Excel 2003
  OpenOffice
  Gnumeric
+ KSpread
  CSV
 
 =head1 BUGS AND LIMITATIONS

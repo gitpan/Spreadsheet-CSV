@@ -6,9 +6,9 @@ use Test::More;
 use Spreadsheet::CSV();
 use IO::File();
 
-plan tests => 18;
+plan tests => 24;
 
-foreach my $file_name (qw(missing_worksheet.xlsx missing_content.ods missing_mimetype.ods unknown_mimetype.ods bad_archive.xlsx bad_gzip.gnumeric)) {
+foreach my $file_name (qw(missing_worksheet.xlsx missing_content.ods missing_mimetype.ods unknown_mimetype.ods bad_archive.xlsx bad_gzip.gnumeric missing_maindoc.ksp corrupt_maindoc.ksp)) {
 	my $handle = IO::File->new('t/data/corrupt/' . $file_name) or die "Screaming:$!";
 	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();

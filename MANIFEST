@@ -20,6 +20,7 @@ t/data/bombs/content.sxc
 t/data/bombs/content.ods
 t/data/bombs/worksheet.xlsx
 t/data/bombs/shared_strings.xlsx
+t/data/bombs/maindoc.ksp
 t/data/sample.sxc
 t/data/sample2.ods
 t/data/sample.xls
@@ -29,6 +30,8 @@ t/data/corrupt/missing_worksheet.xlsx
 t/data/corrupt/bad_archive.xlsx
 t/data/corrupt/missing_content.ods
 t/data/corrupt/missing_mimetype.ods
+t/data/corrupt/missing_maindoc.ksp
+t/data/corrupt/corrupt_maindoc.ksp
 t/data/sample.xlsx
 t/data/sample2.xlsx
 t/data/sample2.gnumeric
@@ -36,5 +39,7 @@ t/data/sample2.sxc
 t/data/sample2.xls
 t/data/sample.csv
 t/data/sample2.csv
+t/data/sample.ksp
+t/data/sample2.ksp
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)
