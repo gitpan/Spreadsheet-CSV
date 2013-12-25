@@ -1,5 +1,9 @@
 Revision history for Spreadsheet-CSV
 
+0.10   Thu Dec 26 07:49:00 2013
+        Added more debugging to tests for CPAN Tester failures
+        Set minimum perl to 5.10
+
 0.09   Wed Dec 25 20:32:00 2013
         Syntax fixes
 

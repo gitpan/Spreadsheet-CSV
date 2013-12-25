@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -896,7 +896,7 @@ Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =head1 SYNOPSIS
 

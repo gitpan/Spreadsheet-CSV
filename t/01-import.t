@@ -1,12 +1,11 @@
 #!perl -T
-use 5.006;
 use strict;
 use warnings FATAL => 'all';
 use Test::More;
 use Spreadsheet::CSV();
 use IO::File();
 
-plan tests => 217;
+plan tests => 322;
 
 foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 	my $handle = IO::File->new('t/data/sample.' . $suffix) or die "Screaming:$!";
@@ -33,7 +32,7 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
         ];
 	my $index = 0;
 	foreach my $expected (@{$expected}) {
-		ok($expected eq $row->[$index], "Column $index of Row 3 matched correctly");
+		ok($expected eq $row->[$index], "Column $index of Row 1 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
 		$index += 1;
 	}
 	$row = $spreadsheet->getline($handle);
@@ -54,6 +53,11 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
           'GST',
           'Active'
         ];
+	$index = 0;
+	foreach my $expected (@{$expected}) {
+		ok($expected eq $row->[$index], "Column $index of Row 2 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
+		$index += 1;
+	}
 	$row = $spreadsheet->getline($handle);
 	$expected = [
           'Amazing-PIPE!',
@@ -74,7 +78,7 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
         ];
 	$index = 0;
 	foreach my $expected (@{$expected}) {
-		ok($expected eq $row->[$index], "Column $index of Row 3 matched correctly");
+		ok($expected eq $row->[$index], "Column $index of Row 3 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
 		$index += 1;
 	}
 	ok(not(defined $spreadsheet->getline($handle)), "Only three rows in the $suffix spreadsheet");
