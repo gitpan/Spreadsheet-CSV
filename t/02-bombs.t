@@ -15,7 +15,7 @@ foreach my $file_name (qw(shared_strings.xlsx workbook.xlsx worksheet.xlsx conte
 	my $result = $spreadsheet->getline($handle);
 	ok(not(defined $result), "getline returned not defined on an XML bomb");
 	ok($spreadsheet->eof() eq '', "eof returned false");
-	ok($spreadsheet->error_diag() =~ /^XML - Invalid XML:XML Entities have been detected and rejected in the XML, due to security concerns/, "Correctly detects XML bomb in $file_name");
+	ok($spreadsheet->error_diag() =~ /^XML - Invalid XML in [\w\/. ]+:XML Entities have been detected and rejected in the XML, due to security concerns/, "Correctly detects XML bomb in $file_name:" . $spreadsheet->error_diag());
 }
 
 1;

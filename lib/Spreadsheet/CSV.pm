@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -241,7 +241,7 @@ sub _handle_workbook_type_zips {
         $self->{zip}       = $zip;
         $self->{row_index} = 0;
         my $content = $worksheet->contents();
-        my $cells = $self->_xlsx_cells( $content, $shared_strings );
+        my $cells = $self->_xlsx_cells( $content, $shared_strings, $worksheet_path );
         if ( defined $cells ) {
             $self->{cells} = $cells;
             return 1;
@@ -443,8 +443,8 @@ sub _ksp_cells {
     my $xml               = XML::Parser->new(
         Handlers => {
             Entity => sub {
-                Carp::croak(
-'XML Entities have been detected and rejected in the XML, due to security concerns'
+                die(
+"XML Entities have been detected and rejected in the XML, due to security concerns\n"
                 );
             },
             Start => sub {
@@ -490,7 +490,8 @@ sub _ksp_cells {
     );
     eval { $xml->parse($maindoc_content); } or do {
         chomp $EVAL_ERROR;
-        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        $EVAL_ERROR =~ s/^\s*//smx;
+        $self->{_ERROR_DIAG} = "XML - Invalid XML in maindoc.xml:$EVAL_ERROR";
         return;
     };
     return $cells;
@@ -507,8 +508,8 @@ sub _ods_cells {
     my $xml = XML::Parser->new(
         Handlers => {
             Entity => sub {
-                Carp::croak(
-'XML Entities have been detected and rejected in the XML, due to security concerns'
+                die(
+"XML Entities have been detected and rejected in the XML, due to security concerns\n"
                 );
             },
             Start => sub {
@@ -574,7 +575,8 @@ sub _ods_cells {
     );
     eval { $xml->parse($ods_content); } or do {
         chomp $EVAL_ERROR;
-        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        $EVAL_ERROR =~ s/^\s*//smx;
+        $self->{_ERROR_DIAG} = "XML - Invalid XML in content.xml:$EVAL_ERROR";
         return;
     };
     if ( defined $cells ) {
@@ -604,8 +606,8 @@ sub _gnumeric_cells {
     my $xml = XML::Parser->new(
         Handlers => {
             Entity => sub {
-                Carp::croak(
-'XML Entities have been detected and rejected in the XML, due to security concerns'
+                die(
+"XML Entities have been detected and rejected in the XML, due to security concerns\n"
                 );
             },
             Start => sub {
@@ -660,7 +662,8 @@ sub _gnumeric_cells {
     );
     eval { $xml->parse($gnumeric_content); } or do {
         chomp $EVAL_ERROR;
-        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        $EVAL_ERROR =~ s/^\s*//smx;
+        $self->{_ERROR_DIAG} = "XML - Invalid XML in gzipped gnumeric file:$EVAL_ERROR";
         return;
     };
     if ( defined $cells ) {
@@ -691,8 +694,8 @@ sub _xlsx_shared_strings {
     my $xml            = XML::Parser->new(
         Handlers => {
             Entity => sub {
-                Carp::croak(
-'XML Entities have been detected and rejected in the XML, due to security concerns'
+                die(
+"XML Entities have been detected and rejected in the XML, due to security concerns\n"
                 );
             },
             Start => sub {
@@ -732,7 +735,7 @@ sub _xlsx_shared_strings {
     eval { $xml->parse($shared_string_content); } or do {
         chomp $EVAL_ERROR;
         $EVAL_ERROR =~ s/^\s*//smx;
-        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        $self->{_ERROR_DIAG} = "XML - Invalid XML in sharedStrings.xml:$EVAL_ERROR";
         return;
     };
     return $shared_strings;
@@ -752,8 +755,8 @@ sub _xlsx_worksheet_path {
     my $xml = XML::Parser->new(
         Handlers => {
             Entity => sub {
-                Carp::croak(
-'XML Entities have been detected and rejected in the XML, due to security concerns'
+                die(
+"XML Entities have been detected and rejected in the XML, due to security concerns\n"
                 );
             },
             Start => sub {
@@ -791,7 +794,8 @@ sub _xlsx_worksheet_path {
     );
     eval { $xml->parse($content); } or do {
         chomp $EVAL_ERROR;
-        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        $EVAL_ERROR =~ s/^\s*//smx;
+        $self->{_ERROR_DIAG} = "XML - Invalid XML in xl/workbook.xml:$EVAL_ERROR";
         return;
     };
     if ( !defined $worksheet_number ) {
@@ -807,7 +811,7 @@ sub _xlsx_worksheet_path {
 }
 
 sub _xlsx_cells {
-    my ( $self, $xlsx_content, $shared_strings ) = @_;
+    my ( $self, $xlsx_content, $shared_strings, $worksheet_path ) = @_;
     my $cells = [];
     my $current_worksheet_name;
     my $current_sheet_cells = [];
@@ -817,8 +821,8 @@ sub _xlsx_cells {
     my $xml               = XML::Parser->new(
         Handlers => {
             Entity => sub {
-                Carp::croak(
-'XML Entities have been detected and rejected in the XML, due to security concerns'
+                die(
+"XML Entities have been detected and rejected in the XML, due to security concerns\n"
                 );
             },
             Start => sub {
@@ -878,7 +882,7 @@ sub _xlsx_cells {
     );
     eval { $xml->parse($xlsx_content); } or do {
         chomp $EVAL_ERROR;
-        $self->{_ERROR_DIAG} = "XML - Invalid XML:$EVAL_ERROR";
+        $self->{_ERROR_DIAG} = "XML - Invalid XML in $worksheet_path:$EVAL_ERROR";
         return;
     };
     return $cells;
@@ -893,7 +897,7 @@ Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =head1 SYNOPSIS
 
