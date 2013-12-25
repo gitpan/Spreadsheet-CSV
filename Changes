@@ -1,5 +1,8 @@
 Revision history for Spreadsheet-CSV
 
+0.09   Wed Dec 25 20:32:00 2013
+        Syntax fixes
+
 0.08   Wed Dec 25 19:15:00 2013
         Improved handling of XML entities
 
