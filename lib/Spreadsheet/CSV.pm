@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -893,7 +893,7 @@ Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =head1 SYNOPSIS
 
@@ -1055,8 +1055,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Spreadsheet-CSV>
 Copyright 2013 David Dick.
 
 This program is free software; you can redistribute it and/or modify it
-under the terms of the the Artistic License (2.0). You may obtain a
-copy of the full license at:
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
 
-L<http://www.perlfoundation.org/artistic_license_2_0>
-
+See http://dev.perl.org/licenses/ for more information.

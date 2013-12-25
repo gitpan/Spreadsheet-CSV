@@ -8,9 +8,11 @@ WriteMakefile(
     AUTHOR           => q{David Dick <ddick@cpan.org>},
     VERSION_FROM     => 'lib/Spreadsheet/CSV.pm',
     ABSTRACT_FROM    => 'lib/Spreadsheet/CSV.pm',
-    LICENSE          => 'Artistic_2_0',
-    PL_FILES         => {},
+    ($ExtUtils::MakeMaker::VERSION >= 6.3002
+      ? ('LICENSE'=> 'perl')
+      : ()),
     MIN_PERL_VERSION => 5.006,
+    PL_FILES         => {},
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
     },
