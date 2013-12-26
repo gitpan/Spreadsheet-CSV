@@ -1,5 +1,9 @@
 Revision history for Spreadsheet-CSV
 
+0.11   Thu Dec 26 15:38:00 2013
+        Discovered issues from extracting floating point numbers from Spreadsheet::ParseExcel
+        re-wrote t/01-import.t to accept values supplied by Spreadsheet::ParseExcel
+
 0.10   Thu Dec 26 07:49:00 2013
         Added more debugging to tests for CPAN Tester failures
         Set minimum perl to 5.10

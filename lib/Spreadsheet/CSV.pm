@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -896,7 +896,7 @@ Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =head1 SYNOPSIS
 
@@ -985,7 +985,7 @@ If (and only if) an error occurred, this function returns the diagnostics of tha
 
 =head1 DIAGNOSTICS
 
-If an error occurred, C<$csv->error_diag> can be used to get more
+If an error occurred, L</error_diag> can be used to get more
 information on the cause of the failure.
 
 =head1 CONFIGURATION AND ENVIRONMENT
@@ -1028,6 +1028,8 @@ The only spreadsheets supported at the moment are
 
 At the moment this library will read everything into RAM.  It relies on the system enforcing the reasonable limits
 for file size, to allow these files to be read into RAM.  This may change in the future.
+
+Spreadsheet::ParseExcel can lose precision when extracing floating point numbers
 
 Please report any bugs or feature requests to C<bug-spreadsheet-csv at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Spreadsheet-CSV>.  I will be notified, and then you'll

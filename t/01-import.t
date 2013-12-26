@@ -53,6 +53,12 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
           'GST',
           'Active'
         ];
+	if ($suffix eq 'xls') {
+		if ($Config::Config{uselongdouble}) {
+			$expected->[3] = 20.5399999999999991;
+			$expected->[8] = 10.5399999999999991;
+		}
+	}
 	$index = 0;
 	foreach my $expected (@{$expected}) {
 		ok($expected eq $row->[$index], "Column $index of Row 2 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
@@ -76,6 +82,11 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
           'EXEMPT',
           'Active'
         ];
+	if ($suffix eq 'xls') {
+		if ($Config::Config{uselongdouble}) {
+			$expected->[8] = 2.22999999999999998;
+		}
+	}
 	$index = 0;
 	foreach my $expected (@{$expected}) {
 		ok($expected eq $row->[$index], "Column $index of Row 3 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
