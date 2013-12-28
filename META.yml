@@ -28,4 +28,4 @@ requires:
   Text::CSV_XS: 0
   XML::Parser: 0
   perl: 5.01
-version: 0.11
+version: 0.12

@@ -5,7 +5,16 @@ use Test::More;
 use Spreadsheet::CSV();
 use IO::File();
 
-plan tests => 322;
+plan tests => 336;
+
+my %expected_content_types = ( ods => 'application/vnd.oasis.opendocument.spreadsheet',
+				sxc => 'application/vnd.sun.xml.calc',
+				xls => 'application/vnd.ms-excel',
+				gnumeric => 'application/x-gnumeric',
+				xlsx => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				csv => 'text/csv',
+				ksp => 'application/x-kspread',
+			);
 
 foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 	my $handle = IO::File->new('t/data/sample.' . $suffix) or die "Screaming:$!";
@@ -94,6 +103,8 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 	}
 	ok(not(defined $spreadsheet->getline($handle)), "Only three rows in the $suffix spreadsheet");
 	$spreadsheet->eof() or $spreadsheet->error_diag();
+	ok($spreadsheet->suffix() eq $suffix, "suffix() should have returned '$suffix' and actually returned '" . $spreadsheet->suffix() . "'");
+	ok($spreadsheet->content_type() eq $expected_content_types{$suffix}, "content_type() should have returned '$expected_content_types{$suffix}' and actually returned '" . $spreadsheet->content_type()  ."'");
 }
 
 1;

@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -177,6 +177,7 @@ sub _setup_handle {
             push @{ $self->{cells} }, $row;
         }
         if ( $self->{csv}->eof() ) {
+            $self->{content_type} = 'text/csv'; # according to RFC 4180
             $self->{type}      = 'csv';
             $self->{row_index} = 0;
             $self->{handle}    = $input_handle;
@@ -386,6 +387,8 @@ sub _setup_compress_zlib_spreadsheet {
         $self->{_ERROR_DIAG} = q[GZIP - ] . $gzip_error;
         return;
     }
+    $self->{content_type} = 'application/x-gnumeric';
+    $self->{type}         = 'gnumeric';
     $self->{row_index} = 0;
     my $cells = $self->_gnumeric_cells($contents);
     if ( defined $cells ) {
@@ -412,8 +415,9 @@ sub _setup_xls_spreadsheet {
     if ( !defined $worksheet ) {
         return;
     }
-    $self->{type}      = 'xls';
-    $self->{row_index} = 0;
+    $self->{content_type} = 'application/vnd.ms-excel';
+    $self->{type}         = 'xls';
+    $self->{row_index}    = 0;
     return 1;
 }
 
@@ -887,6 +891,16 @@ sub _xlsx_cells {
     return $cells;
 }
 
+sub content_type {
+    my ($self) = @_;
+    return $self->{content_type};
+}
+
+sub suffix {
+    my ($self) = @_;
+    return $self->{type};
+}
+
 1;
 __END__
 
@@ -896,7 +910,7 @@ Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =head1 SYNOPSIS
 
@@ -982,6 +996,22 @@ failure and end of file
  $error_str = $csv->error_diag ();
 
 If (and only if) an error occurred, this function returns the diagnostics of that error.
+
+=head2 content_type
+
+ $content_type = $csv->content_type ();
+
+After the $handle has been passed to getline, the content_type can be queried.  If 
+$handle points to a recognised spreadsheet type, the appropriate content type will be
+returned (such as 'application/vnd.ms-excel', otherwise, undef will be returned
+
+=head2 suffix
+
+ $suffix = $csv->suffix ();
+
+After the $handle has been passed to getline, the file suffix can be queried.  If 
+$handle points to a recognised spreadsheet type, the suffix will be returned (such as
+'xls'), otherwise, undef will be returned
 
 =head1 DIAGNOSTICS
 
