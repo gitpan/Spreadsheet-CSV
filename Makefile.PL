@@ -3,12 +3,15 @@ use strict;
 use warnings FATAL => 'all';
 use ExtUtils::MakeMaker;
 
+my $ext_utils_version = $ExtUtils::MakeMaker::VERSION;
+$ext_utils_version =~ s/^(\d+(?:\.\d+)).*$/$1/; # force the version to be a number, not something like \d\.\d+_\d+
+
 WriteMakefile(
     NAME             => 'Spreadsheet::CSV',
     AUTHOR           => q{David Dick <ddick@cpan.org>},
     VERSION_FROM     => 'lib/Spreadsheet/CSV.pm',
     ABSTRACT_FROM    => 'lib/Spreadsheet/CSV.pm',
-    ($ExtUtils::MakeMaker::VERSION >= 6.3002
+    ($ext_utils_version >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
     MIN_PERL_VERSION => 5.010,
@@ -22,7 +25,7 @@ WriteMakefile(
     PREREQ_PM => {
         'Fcntl' => 0,
         'Spreadsheet::ParseExcel' => 0,
-        'Text::CSV_XS' => 0,
+        'Text::CSV_XS' => 1.00, # UTF-8 fixes
         'Archive::Zip' => 0,
         'XML::Parser' => 0,
         'English' => 0,

@@ -1,5 +1,9 @@
 Revision history for Spreadsheet-CSV
 
+0.13   Tue Dec 31 10:50:00 2013
+        Updated minimum requirement for Text::CSV_XS
+        Fix $ExtUtils::MakeMaker::VERSION checking to allow for non numeric version numbers (RHEL clones)
+
 0.12   Sat Dec 28 14:00:00 2013
         Added content_type and suffix methods
 
