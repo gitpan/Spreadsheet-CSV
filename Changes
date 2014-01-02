@@ -1,5 +1,11 @@
 Revision history for Spreadsheet-CSV
 
+0.14   Thu Jan 02 19:28:00 2014
+        Changed the behaviour when parsing text/csv files.  The Text::CSV_XS will not have binary switched on by default.  Instead,
+        the filehandle passed to Text::CSV_XS will have ':encoding(UTF-8)' switched on.
+        Added corrupt csv and non-spreadsheet (image) test cases
+        Improved code coverage a little
+
 0.13   Tue Dec 31 10:50:00 2013
         Updated minimum requirement for Text::CSV_XS
         Fix $ExtUtils::MakeMaker::VERSION checking to allow for non numeric version numbers (RHEL clones)

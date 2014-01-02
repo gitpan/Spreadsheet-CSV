@@ -32,6 +32,8 @@ t/data/corrupt/missing_content.ods
 t/data/corrupt/missing_mimetype.ods
 t/data/corrupt/missing_maindoc.ksp
 t/data/corrupt/corrupt_maindoc.ksp
+t/data/corrupt/cpan_banner.csv
+t/data/corrupt/bad_definition.csv
 t/data/sample.xlsx
 t/data/sample2.xlsx
 t/data/sample2.gnumeric

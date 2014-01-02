@@ -19,7 +19,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -40,9 +40,6 @@ sub new {
     }
     delete $params->{worksheet_number};
     delete $params->{worksheet_name};
-    if ( !exists $params->{binary} ) {
-        $params->{binary} = 1;
-    }
     $self->{csv} = Text::CSV_XS->new($params);
     bless $self, $class;
     return $self;
@@ -172,18 +169,27 @@ sub _setup_handle {
     }
     else {
         $handle = $self->_stuff_input_into_tmp_file($input_handle);
+        binmode $handle, ':encoding(UTF-8)';
         $self->{cells} = [];
-        while ( my $row = $self->{csv}->getline($handle) ) {
-            push @{ $self->{cells} }, $row;
-        }
-        if ( $self->{csv}->eof() ) {
-            $self->{content_type} = 'text/csv'; # according to RFC 4180
-            $self->{type}      = 'csv';
-            $self->{row_index} = 0;
-            $self->{handle}    = $input_handle;
+        my $parsed_ok;
+        eval {
+            while ( my $row = $self->{csv}->getline($handle) ) {
+                push @{ $self->{cells} }, $row;
+            }
+            $parsed_ok = 1;
+        } or do {
+            $self->{_ERROR_DIAG} = 'CSV - Failed to parse as CSV';
+            return;
+        };
+        if ( ($parsed_ok) && ( $self->{csv}->eof() ) ) {
+            $self->{content_type} = 'text/csv';      # according to RFC 4180
+            $self->{type}         = 'csv';
+            $self->{row_index}    = 0;
+            $self->{handle}       = $input_handle;
         }
         else {
-            $self->{_ERROR_DIAG} = $self->{csv}->error_diag();
+            $self->{_ERROR_DIAG} = 'CSV - Failed to parse as CSV:'
+              . ( 0 + $self->{csv}->error_diag() );
             return;
         }
     }
@@ -389,7 +395,7 @@ sub _setup_compress_zlib_spreadsheet {
     }
     $self->{content_type} = 'application/x-gnumeric';
     $self->{type}         = 'gnumeric';
-    $self->{row_index} = 0;
+    $self->{row_index}    = 0;
     my $cells = $self->_gnumeric_cells($contents);
     if ( defined $cells ) {
         $self->{cells} = $cells;
@@ -408,9 +414,6 @@ sub _setup_xls_spreadsheet {
     }
     elsif ( $self->{worksheet_number} ) {
         $worksheet = $workbook->worksheet( $self->{worksheet_number} - 1 );
-    }
-    else {
-        $worksheet = $workbook->worksheet(0);
     }
     if ( !defined $worksheet ) {
         return;
@@ -439,7 +442,7 @@ sub _process_worksheet {
 
 sub _ksp_cells {
     my ( $self, $maindoc_content ) = @_;
-    my $cells = [];
+    my $cells;
     my $current_worksheet_name;
     my $parameter_stack;
     my $element_stack;
@@ -498,7 +501,18 @@ sub _ksp_cells {
         $self->{_ERROR_DIAG} = "XML - Invalid XML in maindoc.xml:$EVAL_ERROR";
         return;
     };
-    return $cells;
+    if ( defined $cells ) {
+        return $cells;
+    }
+    else {
+        $self->{_ERROR_DIAG} = 'ENOENT - Worksheet '
+          . (
+            defined $self->{worksheet_name}
+            ? $self->{worksheet_name}
+            : $self->{worksheet_number}
+          ) . ' not found';
+        return;
+    }
 }
 
 sub _ods_cells {
@@ -910,7 +924,7 @@ Spreadsheet::CSV - Drop-in replacement for Text::CSV_XS with spreadsheet support
 
 =head1 VERSION
 
-Version 0.13
+Version 0.14
 
 =head1 SYNOPSIS
 
@@ -938,9 +952,7 @@ Spreadsheet::CSV attempts to provide a drop-in replacement for Text::CSV_XS when
 
 (Class method) Returns a new instance of Spreadsheet::CSV.  It accepts all the parameters from Text::CSV_XS, as well as two additional ones.
 
- my $csv = Text::CSV_XS->new ({ attributes ... });
-
-The Text::CSV_XS 'binary' parameter is switched on by default.
+ my $csv = Spreadsheet::CSV->new ({ attributes ... });
 
 The following additional attributes are available:
 
@@ -981,6 +993,9 @@ Accepted file types are currently
  * CSV - .csv
 
 Patches for support for other file types would be gratefully accepted.
+
+When checking for CSV, the Text::CSV_XS module will be passed a filehandle containing
+the same data as the input handle, but with ":encoding(UTF-8)" switched on.
 
 =head2 eof
 X<eof>
@@ -1059,7 +1074,7 @@ The only spreadsheets supported at the moment are
 At the moment this library will read everything into RAM.  It relies on the system enforcing the reasonable limits
 for file size, to allow these files to be read into RAM.  This may change in the future.
 
-Spreadsheet::ParseExcel can lose precision when extracing floating point numbers
+Spreadsheet::ParseExcel can lose precision when extracting floating point numbers
 
 Please report any bugs or feature requests to C<bug-spreadsheet-csv at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Spreadsheet-CSV>.  I will be notified, and then you'll

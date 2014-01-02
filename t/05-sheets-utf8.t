@@ -6,7 +6,7 @@ use Spreadsheet::CSV();
 use IO::File();
 use Encode();
 
-plan tests => 43;
+plan tests => 67;
 
 MAIN: {
 	my $encoded_string = "UTF-8 stuff is 'Ў'";
@@ -35,6 +35,14 @@ MAIN: {
 		$row = $spreadsheet->getline($handle);
 		$row = $spreadsheet->getline($handle);
 		ok($row->[0] eq $decoded_string, "selected cell A1 on selected worksheet name \"Second Sheet\" is \"$encoded_string\" for $file_name");
+		$spreadsheet = Spreadsheet::CSV->new({ 'worksheet_name' => 'Third Sheet' });
+		$row = $spreadsheet->getline($handle);
+		ok((! defined $row) && ($spreadsheet->eof() eq ''), "worksheet name \"Third Sheet\" (it does not exist) correctly returns undef on getline with eof set to '' $file_name");
+		ok($spreadsheet->error_diag() eq 'ENOENT - Worksheet Third Sheet not found', "error_diag() is correctly set to 'ENOENT - Worksheet Third Sheet not found':" . $spreadsheet->error_diag());
+		$spreadsheet = Spreadsheet::CSV->new({ 'worksheet_number' => 43 });
+		$row = $spreadsheet->getline($handle);
+		ok((! defined $row) && ($spreadsheet->eof() eq ''), "worksheet number 43 (it does not exist) correctly returns undef on getline with eof set to '' $file_name");
+		ok($spreadsheet->error_diag() eq 'ENOENT - Worksheet 43 not found', "error_diag() is correctly set to 'ENOENT - Worksheet 43 not found':" . $spreadsheet->error_diag());
 	}
 	foreach my $file_name (qw(sample2.csv)) {
 		my $handle = IO::File->new('t/data/' . $file_name) or die "Screaming:$!";
