@@ -5,7 +5,7 @@ use Test::More;
 use Spreadsheet::CSV();
 use IO::File();
 
-plan tests => 336;
+plan tests => 528;
 
 my %expected_content_types = ( ods => 'application/vnd.oasis.opendocument.spreadsheet',
 				sxc => 'application/vnd.sun.xml.calc',
@@ -16,8 +16,9 @@ my %expected_content_types = ( ods => 'application/vnd.oasis.opendocument.spread
 				ksp => 'application/x-kspread',
 			);
 
-foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
-	my $handle = IO::File->new('t/data/sample.' . $suffix) or die "Screaming:$!";
+foreach my $filename (qw(sample.ods sample.sxc sample.xls sample.gnumeric sample.xlsx sample.csv sample.ksp sample3.xlsx sample3.xls sample.ods sample.sxc)) {
+	my ($name, $suffix) = split /\./, $filename;
+	my $handle = IO::File->new('t/data/' . $filename) or die "Screaming:$!";
 	binmode $handle;
 	my $spreadsheet = Spreadsheet::CSV->new();
 	my $number_of_lines = 0;
@@ -47,7 +48,7 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 	$row = $spreadsheet->getline($handle);
 	$expected = [
           'WIDGET1',
-          'Super Cool Widget!',
+          "Super Cool \nWidget!",
           'Exclusive',
           '20.54',
           'EUR',
@@ -67,6 +68,9 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 			$expected->[3] = 20.5399999999999991;
 			$expected->[8] = 10.5399999999999991;
 		}
+	} elsif ($suffix eq 'gnumeric') {
+		$expected->[3] = '20.539999999999999';
+		$expected->[8] = '10.539999999999999';
 	}
 	$index = 0;
 	foreach my $expected (@{$expected}) {
@@ -76,7 +80,7 @@ foreach my $suffix (qw(ods sxc xls gnumeric xlsx csv ksp)) {
 	$row = $spreadsheet->getline($handle);
 	$expected = [
           'Amazing-PIPE!',
-          'There is nothing this Pipe cannot do!',
+          "There is nothing this Pipe\n cannot do!",
           'Exclusive',
           '100000',
           'JPY',

@@ -12,6 +12,7 @@ use English qw( -no_match_vars );
 use Compress::Zlib();
 use Carp();
 use IO::File();
+use charnames ':full';
 
 sub _MAGIC_NUMBER_BUFFER_SIZE { return 2 }      # for .zip and .gz files
 sub _GRANDPARENT_INDEX        { return -2 }
@@ -19,7 +20,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -40,7 +41,7 @@ sub new {
     }
     delete $params->{worksheet_number};
     delete $params->{worksheet_name};
-    $self->{csv} = Text::CSV_XS->new($params);
+    $self->{csv} = Text::CSV_XS->new( { binary => 1 } );
     bless $self, $class;
     return $self;
 }
@@ -121,6 +122,10 @@ sub _xls_parser {
             }
             if ($process_worksheet) {
                 $self->{cells}->[$row]->[$col] = $cell->{_Value};
+                $self->{cells}->[$row]->[$col] =~
+                  s/\N{CARRIAGE RETURN}\N{LINE FEED}/\N{LINE FEED}/smxg;
+                $self->{cells}->[$row]->[$col] =~
+                  s/\N{LINE FEED}\N{CARRIAGE RETURN}/\N{LINE FEED}/smxg;
             }
         },
         NotSetCell => 1,
@@ -489,7 +494,7 @@ sub _ksp_cells {
                         $cells->[ $parameter_stack->[ _GRANDPARENT_INDEX() ]
                           ->{row} - 1 ]
                           ->[ $parameter_stack->[ _GRANDPARENT_INDEX() ]
-                          ->{column} - 1 ] = $content;
+                          ->{column} - 1 ] .= $content;
                     }
                 }
               }
@@ -532,24 +537,47 @@ sub _ods_cells {
             Start => sub {
                 my ( $expat, $element_name, %element_parameters ) = @_;
                 push @{$element_stack}, $element_name;
-                if ( $element_name eq 'table:table-row' ) {
-                    $current_row           = [];
-                    $current_column_number = 0 - 1;
-                }
-                elsif ( $element_name eq 'table:table' ) {
-                    if ( defined $worksheet_count ) {
-                        $worksheet_count += 1;
+                my ( $prefix, $suffix ) = split /:/smx, $element_name;
+                if ( $prefix eq 'table' ) {
+                    if ( $suffix eq 'table-row' ) {
+                        $current_row           = [];
+                        $current_column_number = 0 - 1;
                     }
-                    else {
-                        $worksheet_count = 0;
+                    elsif ( $suffix eq 'table' ) {
+                        if ( defined $worksheet_count ) {
+                            $worksheet_count += 1;
+                        }
+                        else {
+                            $worksheet_count = 0;
+                        }
+                        $process_worksheet =
+                          $self->_process_worksheet(
+                            $element_parameters{'table:name'},
+                            $worksheet_count );
                     }
-                    $process_worksheet =
-                      $self->_process_worksheet(
-                        $element_parameters{'table:name'},
-                        $worksheet_count );
+                    elsif ( $suffix eq 'table-cell' ) {
+                        $current_column_number += 1;
+                    }
                 }
-                elsif ( $element_name eq 'table:table-cell' ) {
-                    $current_column_number += 1;
+                elsif ( $prefix eq 'text' ) {
+                    if ( $suffix eq 'p' ) {
+                        if ( ( defined $current_row )
+                            && (
+                                defined $current_row->[$current_column_number] )
+                          )
+                        {
+                            $current_row->[$current_column_number] .= "\n";
+                        }
+                    }
+                    elsif ( $suffix eq 's' ) {
+                        if ( ( defined $current_row )
+                            && (
+                                defined $current_row->[$current_column_number] )
+                          )
+                        {
+                            $current_row->[$current_column_number] .= q[ ];
+                        }
+                    }
                 }
             },
             End => sub {
@@ -670,8 +698,15 @@ sub _gnumeric_cells {
                     }
                 }
                 if ( $element_stack->[ _PARENT_INDEX() ] eq 'gnm:Cell' ) {
-                    $current_sheet_cells->[$current_row_number]
-                      ->[$current_column_number] = $content;
+                    if ( $content eq "\N{LINE FEED}" ) {
+                        $current_sheet_cells->[$current_row_number]
+                          ->[$current_column_number] .=
+                          $expat->original_string();
+                    }
+                    else {
+                        $current_sheet_cells->[$current_row_number]
+                          ->[$current_column_number] .= $content;
+                    }
                 }
               }
         }
@@ -739,6 +774,7 @@ sub _xlsx_shared_strings {
             },
             Char => sub {
                 my ( $expat, $content ) = @_;
+                $content =~ s/_x000D_//smxg;
                 if ( defined $shared_strings->{$current_index} ) {
                     $shared_strings->{$current_index} .= $content;
                 }

@@ -1,5 +1,9 @@
 Revision history for Spreadsheet-CSV
 
+0.15   Sat Jun 21 19:44:00 2014
+        Switching binary back on by default in Text::CSV_XS.  This allows line feeds to be accepted.
+	Additional coverage tests to handle line feeds in source documents.
+
 0.14   Thu Jan 02 19:28:00 2014
         Changed the behaviour when parsing text/csv files.  The Text::CSV_XS will not have binary switched on by default.  Instead,
         the filehandle passed to Text::CSV_XS will have ':encoding(UTF-8)' switched on.
