@@ -36,9 +36,11 @@ t/data/corrupt/cpan_banner.csv
 t/data/corrupt/bad_definition.csv
 t/data/sample.xlsx
 t/data/sample2.xlsx
+t/data/sample3.xlsx
 t/data/sample2.gnumeric
 t/data/sample2.sxc
 t/data/sample2.xls
+t/data/sample3.xls
 t/data/sample.csv
 t/data/sample2.csv
 t/data/sample.ksp

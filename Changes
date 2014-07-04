@@ -1,5 +1,8 @@
 Revision history for Spreadsheet-CSV
 
+0.16   Fri Jul 04 07:00:00 2014
+        Added missing data files
+
 0.15   Sat Jun 21 19:44:00 2014
         Switching binary back on by default in Text::CSV_XS.  This allows line feeds to be accepted.
 	Additional coverage tests to handle line feeds in source documents.
