@@ -42,10 +42,13 @@
             "Spreadsheet::ParseExcel" : "0",
             "Text::CSV_XS" : "1",
             "XML::Parser" : "0",
-            "perl" : "5.01"
+            "charnames" : "0",
+            "perl" : "5.01",
+            "strict" : "0",
+            "warnings" : "0"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.17"
+   "version" : "0.18"
 }

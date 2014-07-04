@@ -41,8 +41,8 @@ foreach my $filename (qw(sample.ods sample.sxc sample.xls sample.gnumeric sample
           'Status'
         ];
 	my $index = 0;
-	foreach my $expected (@{$expected}) {
-		ok($expected eq $row->[$index], "Column $index of Row 1 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
+	foreach my $expect (@{$expected}) {
+		ok($expect eq $row->[$index], "Column $index of Row 1 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
 		$index += 1;
 	}
 	$row = $spreadsheet->getline($handle);
@@ -63,18 +63,19 @@ foreach my $filename (qw(sample.ods sample.sxc sample.xls sample.gnumeric sample
           'GST',
           'Active'
         ];
-	if ($suffix eq 'xls') {
-		if ($Config::Config{uselongdouble}) {
-			$expected->[3] = 20.5399999999999991;
-			$expected->[8] = 10.5399999999999991;
-		}
-	} elsif ($suffix eq 'gnumeric') {
-		$expected->[3] = '20.539999999999999';
-		$expected->[8] = '10.539999999999999';
-	}
 	$index = 0;
-	foreach my $expected (@{$expected}) {
-		ok($expected eq $row->[$index], "Column $index of Row 2 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
+	foreach my $expect (@{$expected}) {
+		if (($suffix eq 'xls') && ($index == 3) && ($Config::Config{uselongdouble})) {
+			ok(($expect eq $row->[$index]) || ($row->[$index] eq '20.5399999999999991'), "Column $index of Row 2 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		} elsif (($suffix eq 'xls') && ($index == 8) && ($Config::Config{uselongdouble})) {
+			ok(($expect eq $row->[$index]) || ($row->[$index] eq '10.5399999999999991'), "Column $index of Row 2 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		} elsif (($suffix eq 'gnumeric') && ($index == 3)) {
+			ok(($expect eq $row->[$index]) || ($row->[$index] eq '20.539999999999999'), "Column $index of Row 2 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		} elsif (($suffix eq 'gnumeric') && ($index == 8)) {
+			ok(($expect eq $row->[$index]) || ($row->[$index] eq '10.539999999999999'), "Column $index of Row 2 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		} else {
+			ok($expect eq $row->[$index], "Column $index of Row 2 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		}
 		$index += 1;
 	}
 	$row = $spreadsheet->getline($handle);
@@ -95,14 +96,13 @@ foreach my $filename (qw(sample.ods sample.sxc sample.xls sample.gnumeric sample
           'EXEMPT',
           'Active'
         ];
-	if ($suffix eq 'xls') {
-		if ($Config::Config{uselongdouble}) {
-			$expected->[8] = 2.22999999999999998;
-		}
-	}
 	$index = 0;
-	foreach my $expected (@{$expected}) {
-		ok($expected eq $row->[$index], "Column $index of Row 3 matched correctly for $suffix.  Expected '$expected'.  Got '$row->[$index]'");
+	foreach my $expect (@{$expected}) {
+		if (($suffix eq 'xls') && ($index == 8) && ($Config::Config{uselongdouble})) {
+			ok(($expect eq $row->[$index]) && ($row->[$index] eq '2.22999999999999998'), "Column $index of Row 3 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		} else {
+			ok($expect eq $row->[$index], "Column $index of Row 3 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+		}
 		$index += 1;
 	}
 	ok(not(defined $spreadsheet->getline($handle)), "Only three rows in the $suffix spreadsheet");
