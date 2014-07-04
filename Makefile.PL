@@ -20,6 +20,7 @@ WriteMakefile(
         'ExtUtils::MakeMaker' => 0,
     },
     BUILD_REQUIRES => {
+	'CGI' => 0,
         'Test::More' => 0,
     },
     PREREQ_PM => {

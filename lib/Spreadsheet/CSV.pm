@@ -20,7 +20,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 sub new {
     my ( $class, $params ) = @_;
@@ -174,6 +174,10 @@ sub _setup_handle {
     }
     else {
         $handle = $self->_stuff_input_into_tmp_file($input_handle);
+        if (!$self->_check_file_utf8($input_handle)) {
+		    $self->{_ERROR_DIAG} = 'CSV - Failed to parse as CSV';
+		    return;
+	}
         binmode $handle, ':encoding(UTF-8)';
         $self->{cells} = [];
         my $parsed_ok;
@@ -199,6 +203,16 @@ sub _setup_handle {
         }
     }
     return $self;
+}
+
+sub _check_file_utf8 {
+	my ($self, $handle) = @_;
+	while(my $line = <$handle>) {
+		if (!utf8::decode(my $text = $line)) {
+			return;
+		}
+	}
+	return 1;
 }
 
 sub _setup_zip {

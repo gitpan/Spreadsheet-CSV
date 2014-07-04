@@ -1,5 +1,9 @@
 Revision history for Spreadsheet-CSV
 
+0.17   Fri Jul 04 21:33:00 2014
+        Added better utf8 checks for csv files for old perls
+        Added CGI as a build requirement
+
 0.16   Fri Jul 04 07:00:00 2014
         Added missing data files
 
