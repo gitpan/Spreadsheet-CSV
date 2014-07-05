@@ -20,7 +20,7 @@ sub _PARENT_INDEX             { return -1 }
 sub _EXCEL_COLUMN_RADIX       { return 26 }
 sub _BUFFER_SIZE              { return 4096 }
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 sub new {
     my ( $class, $params ) = @_;

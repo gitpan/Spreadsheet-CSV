@@ -99,7 +99,7 @@ foreach my $filename (qw(sample.ods sample.sxc sample.xls sample.gnumeric sample
 	$index = 0;
 	foreach my $expect (@{$expected}) {
 		if (($suffix eq 'xls') && ($index == 8) && ($Config::Config{uselongdouble})) {
-			ok(($expect eq $row->[$index]) && ($row->[$index] eq '2.22999999999999998'), "Column $index of Row 3 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
+			ok(($expect eq $row->[$index]) || ($row->[$index] eq '2.22999999999999998'), "Column $index of Row 3 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
 		} else {
 			ok($expect eq $row->[$index], "Column $index of Row 3 matched correctly for $suffix.  Expected '$expect'.  Got '$row->[$index]'");
 		}

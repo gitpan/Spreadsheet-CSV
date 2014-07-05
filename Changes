@@ -1,5 +1,8 @@
 Revision history for Spreadsheet-CSV
 
+0.19   Sat Jul 05 12:40:00 2014
+        Corrected tests again to allow for differing float values
+
 0.18   Sat Jul 05 09:29:00 2014
         Added more build requirements
         Corrected tests to allow for differing float values
