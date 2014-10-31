@@ -1,5 +1,8 @@
 Revision history for Spreadsheet-CSV
 
+0.20   Fri Oct 31 21:10:00 2014
+        Fixing tests to cope with changing temp file handling in CGI.pm
+
 0.19   Sat Jul 05 12:40:00 2014
         Corrected tests again to allow for differing float values
 

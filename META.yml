@@ -24,6 +24,7 @@ requires:
   Compress::Zlib: 0
   English: 0
   Fcntl: 0
+  File::Temp: 0
   IO::File: 0
   Spreadsheet::ParseExcel: 0
   Text::CSV_XS: 1
@@ -32,4 +33,4 @@ requires:
   perl: 5.01
   strict: 0
   warnings: 0
-version: 0.19
+version: 0.20

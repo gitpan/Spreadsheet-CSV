@@ -28,6 +28,7 @@ WriteMakefile(
         'Spreadsheet::ParseExcel' => 0,
         'Text::CSV_XS' => 1.00, # UTF-8 fixes
         'Archive::Zip' => 0,
+	'File::Temp' => 0,
         'XML::Parser' => 0,
         'English' => 0,
         'Fcntl' => 0,

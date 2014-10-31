@@ -38,6 +38,7 @@
             "Compress::Zlib" : "0",
             "English" : "0",
             "Fcntl" : "0",
+            "File::Temp" : "0",
             "IO::File" : "0",
             "Spreadsheet::ParseExcel" : "0",
             "Text::CSV_XS" : "1",
@@ -50,5 +51,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.19"
+   "version" : "0.20"
 }
